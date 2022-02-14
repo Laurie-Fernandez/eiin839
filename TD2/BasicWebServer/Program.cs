@@ -4,9 +4,14 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
+using System.Reflection;
 
-namespace BasicServerHTTPlistener
-{
+namespace BasicServerHTTPlistener { 
+
+    public class MyReflectionClass {
+        public string MyMethod = "<html><body> Hello “ + <param1_value> + ” et “ + <param2_value> + “</body></html>";
+    }
+
     internal class Program
     {
         private static void Main(string[] args)
@@ -109,7 +114,13 @@ namespace BasicServerHTTPlistener
                 HttpListenerResponse response = context.Response;
 
                 // Construct a response.
-                string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+                Type type = typeof(MyReflectionClass);
+                MethodInfo method = type.GetMethod("MyMethod");
+                MyReflectionClass c = new MyReflectionClass();
+                string responseString = (string)method.Invoke(c, null);
+                Console.WriteLine(response);
+                Console.ReadLine();
+
                 byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
                 // Get a response stream and write the response to it.
                 response.ContentLength64 = buffer.Length;
@@ -122,4 +133,6 @@ namespace BasicServerHTTPlistener
             // listener.Stop();
         }
     }
+
+   
 }
