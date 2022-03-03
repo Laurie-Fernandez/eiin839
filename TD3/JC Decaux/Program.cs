@@ -1,6 +1,6 @@
 ﻿using Microsoft.Build.Tasks;
-using Nest;
 using System;
+using System.Device.Location;
 using System.Text.Json;
 
 namespace TD3 // Note: actual namespace depends on the project name.
@@ -33,7 +33,7 @@ namespace TD3 // Note: actual namespace depends on the project name.
     {
         static readonly HttpClient client = new HttpClient();
 
-        static async void exercice1()
+        static async Task exercice1()
         {
             string api_key = "fd4e518c5cf2c25e0ae2b34e82b286365c05487b";
             HttpResponseMessage response = await client.GetAsync($"https://api.jcdecaux.com/vls/v1/stations?apiKey={api_key}");
@@ -49,7 +49,7 @@ namespace TD3 // Note: actual namespace depends on the project name.
             }
         }
 
-        static async void exercice2(String contract)
+        static async Task exercice2(String contract)
         {
             string api_key = "fd4e518c5cf2c25e0ae2b34e82b286365c05487b";
             // On précise ici le nom du contrat dans la requête GET avec l'args[0] de l'appel
@@ -65,29 +65,21 @@ namespace TD3 // Note: actual namespace depends on the project name.
             }
         }
 
-        static async void exercice3(String station)
+        static async Task exercice3(String contract, int station)
         {
             string api_key = "fd4e518c5cf2c25e0ae2b34e82b286365c05487b";
-            HttpResponseMessage response = await client.GetAsync($"https://api.jcdecaux.com/vls/v1/stations?name={station}&apiKey={api_key}");
+            HttpResponseMessage response = await client.GetAsync($"https://api.jcdecaux.com/vls/v1/stations/{station}?contract={contract}&apiKey={api_key}");
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();
 
-            List<Root> jsonData = JsonSerializer.Deserialize<List<Root>>(responseBody);
+            Root jsonData = JsonSerializer.Deserialize<Root>(responseBody);
 
-
-            List<Root> stationData = null;
-            foreach (Root element in jsonData)
-            {
-                if (element.name == station) { stationData.Add(element); }
-            }
-
-            foreach (Root element in stationData)
-            {
-                Console.WriteLine(element.name);
-            }
+            Console.WriteLine(jsonData.name + " \n" + jsonData.contract_name + "\n" + jsonData.name + "\n" + jsonData.address + "\n" +
+                jsonData.position + "\n" + jsonData.banking + "\n" + jsonData.bonus + "\n" + jsonData.bike_stands + "\n" +
+                jsonData.available_bike_stands + "\n" + jsonData.available_bikes + "\n" + jsonData.status + "\n" + jsonData.last_update);
         }
 
-        /*static async void exercice4(String contract, double lat, double lng) 
+        static async Task exercice4(String contract, double lat, double lng) 
         {
             GeoCoordinate userCurrentPosition = new GeoCoordinate(lat, lng);
             string api_key = "fd4e518c5cf2c25e0ae2b34e82b286365c05487b";
@@ -113,29 +105,29 @@ namespace TD3 // Note: actual namespace depends on the project name.
                 Console.WriteLine($"The nearest station to the position ({lat},{lng}) is {nearestStation.name} at ({nearestStation.position.lat},{nearestStation.position.lng}) situated {(distanceMin)}m from your current position.");
             }
             else {Console.WriteLine($"No station were found near your current position ({lat},{lng})");}                   
-        }*/
+        }
 
         static async Task Main(string[] args)
         {
             /*
             * QUESTION 1 : Créez un programme qui ne prend pas d'argument et renvoie la liste des contrats disponibles de JCDecaux.
             */
-            exercice1();
+            //await exercice1();
 
             /*
              * QUESTION 2 : Créez un programme qui, étant donné un contrat comme paramètre, renvoie la liste des stations correspondantes.
              */
-            exercice2("toulouse");
+            //await exercice2("toulouse");
 
             /*
              * QUESTION 3 : Créez un programme qui, étant donné un contrat comme paramètre, renvoie la liste des stations correspondantes.
              */
-            //exercice3("00055 - SAINT-SERNIN - G. ARNOULT");
+            //await exercice3("toulouse",55);
 
             /*
             * QUESTION 4 : Créez un programme qui prend en argument un contrat et une position GPS, et trouve la station la plus proche.
             */
-            //exercice4("toulouse",43.6089519605732, 1.4410035987314);
+            await exercice4("toulouse",43.6089519605732, 1.4410035987314);
         }
     }
 }

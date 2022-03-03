@@ -12,6 +12,7 @@
     <PackageReference Include="GeoCoordinate" Version="2.0.1" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.0.0" />
     <PackageReference Include="NEST" Version="7.17.0" />
+    <PackageReference Include="System.Device.Location.Portable" Version="1.0.0" />
   </ItemGroup>
 
 </Project>
