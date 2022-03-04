@@ -52,6 +52,19 @@ namespace BasicServerHTTPlistener {
                 throw new FormatException();
             }
         }
+
+        public static string incr(String param1)
+        {
+            try
+            {
+                int n1 = Int32.Parse(param1);
+                return (n1 + 1).ToString();
+            }
+            catch (FormatException)
+            {
+                throw new FormatException();
+            }
+        }
     }
 
 
@@ -232,14 +245,14 @@ namespace BasicServerHTTPlistener {
 
                         case "exercice3/":
 
-                            if (request.Url.Segments.Length >= 3)
+                            if (request.Url.Segments.Length == 2)
                             {
                                 Type methodsType = typeof(MyMethods);
                                 MethodInfo method = methodsType.GetMethod(request.Url.Segments[2]);
 
                                 if (method == null)
                                 {
-                                    htmlResponse = "You have to give a defined method in parameter (add, substract, multiply)";
+                                    htmlResponse = "You have to give a defined method in parameter (add, substract, multiply, incr)";
                                 }
                                 else
                                 {
