@@ -207,7 +207,7 @@ namespace BasicServerHTTPlistener {
                             // Example of url : http://localhost:8080/exercice2/multiply?param1=multiply&param2=12&param3=5
                             ProcessStartInfo start = new ProcessStartInfo();
                             start.FileName = "python";
-                            start.Arguments += $"../../{request.Url.Segments[2]}.py ";
+                            start.Arguments = $"../../{request.Url.Segments[2]}.py ";
 
                             foreach (string param in parameters)
                             {
@@ -230,9 +230,37 @@ namespace BasicServerHTTPlistener {
 
                             break;
 
-
                         case "exercice3/":
 
+                            if (request.Url.Segments.Length >= 3)
+                            {
+                                Type methodsType = typeof(MyMethods);
+                                MethodInfo method = methodsType.GetMethod(request.Url.Segments[2]);
+
+                                if (method == null)
+                                {
+                                    htmlResponse = "You have to give a defined method in parameter (add, substract, multiply)";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        string result = (string)methodsType.GetMethod(request.Url.Segments[2]).Invoke(null, new object[] { parameters[0], parameters[1] });
+                                        htmlResponse = $"The result of the method is {result}";
+                                        responseString = $"<!DOCTYPE html><html><body>{htmlResponse}</body></html>";
+                                    }
+                                    catch (TargetInvocationException)
+                                    {
+                                        htmlResponse = "Error of format";
+                                    }
+                                }
+
+
+                            }
+                            else
+                            {
+                                htmlResponse = "3 parameters should be given";
+                            }
                             break;
 
                         default:
@@ -240,7 +268,6 @@ namespace BasicServerHTTPlistener {
                             break;
                     }
 
-                    
                 }
                 else
                 {
