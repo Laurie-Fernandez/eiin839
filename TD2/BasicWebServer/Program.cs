@@ -1,16 +1,59 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Web;
-using System.Reflection;
 
 namespace BasicServerHTTPlistener { 
 
-    public class MyReflectionClass {
-        public string MyMethod = "<html><body> Hello “ + <param1_value> + ” et “ + <param2_value> + “</body></html>";
+
+    public class MyMethods
+    {
+        public static string add(String param1, String param2)
+        {
+            try
+            {
+                int n1 = Int32.Parse(param1);
+                int n2 = Int32.Parse(param2);
+                return (n1 + n2).ToString();
+            }
+            catch (FormatException)
+            {
+                throw new FormatException();
+            }
+        }
+
+        public static string substract(String param1, String param2)
+        {
+            try
+            {
+                int n1 = Int32.Parse(param1);
+                int n2 = Int32.Parse(param2);
+                return (n1 - n2).ToString();
+            }
+            catch (FormatException)
+            {
+                throw new FormatException();
+            }
+        }
+
+        public static string multiply(String param1, String param2)
+        {
+            try
+            {
+                int n1 = Int32.Parse(param1);
+                int n2 = Int32.Parse(param2);
+                return (n1 * n2).ToString();
+            }
+            catch (FormatException)
+            {
+                throw new FormatException();
+            }
+        }
     }
+
 
     internal class Program
     {
@@ -23,8 +66,8 @@ namespace BasicServerHTTPlistener {
                 Console.WriteLine("A more recent Windows version is required to use the HttpListener class.");
                 return;
             }
- 
- 
+
+
             // Create a listener.
             HttpListener listener = new HttpListener();
 
@@ -54,7 +97,8 @@ namespace BasicServerHTTPlistener {
             }
 
             // Trap Ctrl-C on console to exit 
-            Console.CancelKeyPress += delegate {
+            Console.CancelKeyPress += delegate
+            {
                 // call methods to close socket and exit
                 listener.Stop();
                 listener.Close();
@@ -76,7 +120,7 @@ namespace BasicServerHTTPlistener {
                         documentContents = readStream.ReadToEnd();
                     }
                 }
-                
+
                 // get url 
                 Console.WriteLine($"Received request for {request.Url}");
 
@@ -107,19 +151,109 @@ namespace BasicServerHTTPlistener {
                 Console.WriteLine("param3 = " + HttpUtility.ParseQueryString(request.Url.Query).Get("param3"));
                 Console.WriteLine("param4 = " + HttpUtility.ParseQueryString(request.Url.Query).Get("param4"));
 
+                string[] parameters =
+                {
+                    HttpUtility.ParseQueryString(request.Url.Query).Get("param1"),
+                    HttpUtility.ParseQueryString(request.Url.Query).Get("param2"),
+                    HttpUtility.ParseQueryString(request.Url.Query).Get("param3")
+                };
+
                 //
                 Console.WriteLine(documentContents);
 
                 // Obtain a response object.
                 HttpListenerResponse response = context.Response;
+                string responseString = "";
+
+                if (request.Url.Segments.Length >= 2)
+                {
+                    switch (request.Url.Segments[1])
+                    {
+                        case "exercice1/":
+                            // Example of url to use : http://localhost:8080/exercice1/substract?param1=12&param2=5
+                            string htmlResponse = "";
+
+                            if (request.Url.Segments.Length >= 3)
+                            {
+                                Type methodsType = typeof(MyMethods);
+                                MethodInfo method = methodsType.GetMethod(request.Url.Segments[2]);
+
+                                if (method == null)
+                                {
+                                    htmlResponse = "You have to give a defined method in parameter (add, substract, multiply)";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        string result = (string)methodsType.GetMethod(request.Url.Segments[2]).Invoke(null, new object[] { parameters[0], parameters[1] });
+                                        htmlResponse = $"The result of the method is {result}";
+                                    }
+                                    catch (TargetInvocationException)
+                                    {
+                                        htmlResponse = "Error of format";
+                                    }
+                                }
+                                
+                            }
+                            else
+                            {
+                                htmlResponse = "3 parameters should be given";
+                            }
+                            responseString = $"<!DOCTYPE html><html><body>{htmlResponse}</body></html>";
+                            break;
+
+                        case "exercice2/":
+                            // Example of url : http://localhost:8080/exercice2/multiply?param1=multiply&param2=12&param3=5
+                            ProcessStartInfo start = new ProcessStartInfo();
+                            start.FileName = "python";
+                            start.Arguments += $"../../{request.Url.Segments[2]}.py ";
+
+                            foreach (string param in parameters)
+                            {
+                                start.Arguments += ((param == null || param.Equals("")) ? "undefined " : param + " ");
+                            }
+
+                            Console.Write("Method arguments: " + start.Arguments);
+
+                            start.UseShellExecute = false;
+                            start.RedirectStandardOutput = true;
+
+                            using (Process process = Process.Start(start))
+                            {
+                                using (StreamReader reader = process.StandardOutput)
+                                {
+                                    string result = reader.ReadToEnd();
+                                    responseString = result;
+                                }
+                            }
+
+                            break;
+
+
+                        case "exercice3/":
+
+                            break;
+
+                        default:
+                            responseString = $"<!DOCTYPE html><html><body>Invalid path used</body></html>";
+                            break;
+                    }
+
+                    
+                }
+                else
+                {
+                    responseString = $"<!DOCTYPE html><html><body>Invalid path used</body></html>";
+                }
 
                 // Construct a response.
-                Type type = typeof(MyReflectionClass);
+                /*Type type = typeof(MyReflectionClass);
                 MethodInfo method = type.GetMethod("MyMethod");
                 MyReflectionClass c = new MyReflectionClass();
                 string responseString = (string)method.Invoke(c, null);
                 Console.WriteLine(response);
-                Console.ReadLine();
+                Console.ReadLine();*/
 
                 byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
                 // Get a response stream and write the response to it.
@@ -132,7 +266,8 @@ namespace BasicServerHTTPlistener {
             // Httplistener neither stop ... But Ctrl-C do that ...
             // listener.Stop();
         }
-    }
 
+
+    }
    
 }
