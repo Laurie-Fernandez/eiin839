@@ -6,11 +6,29 @@ using System.Text;
 
 namespace BasicServerHTTPlistener
 {
+
+    internal class Header
+    {
+        WebHeaderCollection collection;
+        public Header(HttpListenerRequest request)
+        {
+            this.collection = (WebHeaderCollection)request.Headers;
+        }
+        public WebHeaderCollection getHeaders()
+        {
+            return this.collection;
+        }
+        public void printHeaders()
+        {
+            Console.WriteLine($"{collection}");
+        }
+    }
+
     internal class Program
     {
         private static void Main(string[] args)
         {
-            
+
 
             if (!HttpListener.IsSupported)
             {
@@ -56,6 +74,10 @@ namespace BasicServerHTTPlistener
                 // Note: The GetContext method blocks while waiting for a request.
                 HttpListenerContext context = listener.GetContext();
                 HttpListenerRequest request = context.Request;
+
+                //Displaying all request's headers in the console
+                Header header = new Header(request);
+                header.printHeaders();
 
                 string documentContents;
                 using (Stream receiveStream = request.InputStream)
