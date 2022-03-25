@@ -1,0 +1,11 @@
+#workingTest {
+    color: blue;
+}
+
+.map {
+    border: 10px ridge #f00;
+    background-color: none;
+    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+}
